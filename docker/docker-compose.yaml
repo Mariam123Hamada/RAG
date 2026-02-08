@@ -9,7 +9,7 @@ services:
     environment:
       POSTGRES_PASSWORD: mysecretpassword
     volumes:
-      - pgvector_data:/var/lib/postgresql/data
+      - pgvector_data:/var/lib/postgresql/18/docker
     restart: always
 
 volumes:
