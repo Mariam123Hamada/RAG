@@ -1,10 +1,11 @@
 from VectorDBProvider import VectorDBProvider
-import sqlalchemy
+import sqlalchemy import select
+from sqlalchemy.exc.session  import sessionmaker
 
 
 class pgvector(VectorDBProvider):
-    async def connect(self):
-        pass
+    async def connect(self , db_client):
+        self.db_client=db_client
 
 
     async def disconnect(self):
@@ -16,7 +17,8 @@ class pgvector(VectorDBProvider):
         collection_name: str,
         do_reset: bool = False
     ):
-        pass
+        pass 
+                
 
     async def delete_collection(
         self,
