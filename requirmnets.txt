@@ -8,3 +8,4 @@ python-dotenv==1.0.0
 PyPDF2  
 pgvector==0.8.1
 alembic==2.1.1
+psycopg2

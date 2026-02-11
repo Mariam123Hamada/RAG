@@ -1,16 +1,10 @@
-version: '3.8'
-
 services:
   pgvector:
-    image: pgvector/pgvector:0.8.1-pg18-trixie
+    image: pgvector/pgvector:pg15
     container_name: pgvector
-    ports:
-      - "54329:5432"      
     environment:
-      POSTGRES_PASSWORD: mysecretpassword
-    volumes:
-      - pgvector_data:/var/lib/postgresql/18/docker
-    restart: always
-
-volumes:
-  pgvector_data:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: pgvector_data
+    ports:
+      - "54329:5432"

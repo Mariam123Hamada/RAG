@@ -5,13 +5,14 @@ from pgvector.sqlalchemy import Vector
 class Base(DeclarativeBase):
     pass
 
-class ProjectSchema(Base):
-    __tablename__ = "projects"
+class ChunkSchema(Base):
+    __tablename__ = "chunks"
     
-    project_id = Column(Integer, primary_key=True, nullable=False)
-    total_chunks = Column(Integer, nullable=False)
+    chunk_id = Column(Integer, primary_key=True, nullable=False)
+    content = Column(Text, nullable=False)
+    project_id = Column(Integer, ForeignKey("projects.project_id"), nullable=False)
+    embedding = Column(Vector(1536))  
+    new_col=Column(Integer(nullable=False))
 
-    # One-to-many relationship with chunks
-    chunks = relationship("ChunkSchema", back_populates="project")
-
-
+    # Relationship back to project
+    project = relationship("ProjectSchema", back_populates="chunks")
