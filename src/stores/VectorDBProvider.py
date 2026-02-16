@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
-
+from sqlalchemy.orm import Session
+from fastapi import UploadFile 
+from typing import List
 
 class VectorDBProvider(ABC):
     def __init__(
@@ -13,50 +15,23 @@ class VectorDBProvider(ABC):
         self.distance_method = distance_method
 
     @abstractmethod
-    async def connect(self):
+    async def connect(self, db: Session):
         pass
 
     @abstractmethod
     async def disconnect(self):
         pass
 
+
     @abstractmethod
-    async def create_collection(
-        self,
-        collection_name: str,
-        do_reset: bool = False
-    ):
+    async def insert_project(self, file: UploadFile):
         pass
 
     @abstractmethod
-    async def delete_collection(
-        self,
-        collection_name: str
-    ):
+    async def search(self, query_vector: List[float], top_k: int = 5):
         pass
-
+    
+    
     @abstractmethod
-    async def insert_chunks(
-        self,
-        collection_name: str,
-        vectors: list,
-        metadatas: list,
-        ids: list
-    ):
-        pass
-
-    @abstractmethod
-    async def search(
-        self,
-        collection_name: str,
-        query_vector: list,
-        top_k: int
-    ):
-        pass
-
-    @abstractmethod
-    async def get_collection_info(
-        self,
-        collection_name: str
-    ):
-        pass
+    async def get_collection_info(self, project_id: int):
+        pass 
