@@ -45,7 +45,7 @@ async def upload_file(
 async def answer(project_id:int , text : str , service:NLPTask = Depends(get_nlp_task)):
     """ This is the Answer Question Endpoint """
     
-    answer = service.answer_question(project_id , text)
+    answer = await service.answer_question(project_id , text)
     return {
         "answer" : answer["answer"]
     }    

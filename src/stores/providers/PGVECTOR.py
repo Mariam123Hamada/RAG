@@ -82,7 +82,9 @@ class pgvector(VectorDBProvider):
             ChunkSchema.embedding.l2_distance(query_vector)
         ).limit(top_k)
         result = self.db.execute(stmt)
-        return result.scalers().all()        
+        # print(type(result))  -> <class 'sqlalchemy.engine.result.ChunkedIteratorResult'>
+        # print(result)  -> <sqlalchemy.engine.result.ChunkedIteratorResult object at 0x0000016156595E90>
+        return result.scalars().all()        
     async def get_collection_info(self, project_id):
         """ This Function return the info about the cllection file  """
         if self.db is None:

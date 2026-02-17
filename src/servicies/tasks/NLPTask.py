@@ -1,5 +1,5 @@
 from ...helpers import  get_settings , get_db
-from ..embedding import cohereProvider
+from ..embedding import cohereProvider , geminiProvider
 from ..generation import grokgenertion
 from fastapi import APIRouter, UploadFile, File, Depends, status 
 from ...models import ProjectSplitters
@@ -19,13 +19,13 @@ class NLPTask:
         settings = get_settings
 
         grok_key = settings.GROK_KEY
-        cohere_key = settings.COHERE_KEY
+        gemmni_key = settings.GEMMNI_KEY
 
         if not grok_key:
             raise ValueError("Grok Key is not provided.")
 
-        if not cohere_key:
-            raise ValueError("Cohere Key is not provided.")
+        if not gemmni_key:
+            raise ValueError("Gemmeni Key is not provided.")
 
         if not db:
             raise RuntimeError("Database session is not provided.")
@@ -33,7 +33,9 @@ class NLPTask:
         self.client = grokgenertion(api_key=grok_key , genertion_model=settings.GENERTION_MODEL)
         self.client.connect()
 
-        self.embed = cohereProvider(api_key=cohere_key)
+        # self.embed = cohereProvider(api_key=cohere_key)
+        self.embed = geminiProvider(api_key= gemmni_key)
+        self.embed.connect()
         self.splitter = ProjectSplitters()
         self.db_service = pgvector(self.splitter, db)
 
@@ -49,10 +51,7 @@ class NLPTask:
 
         file_extension = BaseController.get_file_extension(file.filename)
         result = await self.db_service.insert_project(file)
-        # this is teh content of result 
-        #     "project_id": new_project.project_id,
-        #     "chunks_saved": len(data_chunks)
-        # }
+
         return {
             "file_extension": file_extension,
             "status": "success",
@@ -70,23 +69,23 @@ class NLPTask:
         if not self.db_service:
             raise RuntimeError("Database connection is not initialized.")
 
-        return self.db_service.search(query_vector=query_vector, top_k=5)
-
-    def answer_question(self, project_id: int, text: str):
+        res = await self.db_service.search(query_vector=query_vector, top_k=5)
+        return res
+    async def answer_question(self, project_id: int, text: str):
         if not text:
             raise ValueError("Question text is required.")
 
         # Step 1: Convert text to embedding
-        query_vector = self.embed.embed_text(text)
+        query_vector = self.embed.embed_text(text)[0].values
 
         # Step 2: Retrieve relevant chunks
-        chunks = self.search_vector(project_id, query_vector)
+        chunks = await self.search_vector(project_id, query_vector)
 
         if not chunks:
             return {"result": "No relevant context found."}
 
         # Step 3: Build RAG prompt
-        context = "\n".join([chunk["content"] for chunk in chunks])
+        context = "\n".join([chunk.content for chunk in chunks])
 
         # Step 4: Generate answer
         result = self.client.chat_models(
