@@ -39,9 +39,9 @@ class DataChunk:
         
         
         response = self.embed_client.embed_text(text)
-        print(type(response))
-        print(response)
+        # print(type(response)) # the type is List
+        # print(response)
         embedding_vector = response[0].values
-        print("Response of the gemmeni Emmbedding-> ", embedding_vector)
+        # print("Response of the gemmeni Emmbedding-> ", embedding_vector)
 
         return embedding_vector

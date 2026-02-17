@@ -25,7 +25,7 @@ class pgvector(VectorDBProvider):
     async def connect(self, db: Session):
         """Assign the SQLAlchemy session"""
         self.db = db
-        app = get_settings()
+        app = get_settings
         coher_api=app.COHERE_KEY
         self.embed_client=cohereProvider(api_key=coher_api).connect()
 
@@ -45,7 +45,7 @@ class pgvector(VectorDBProvider):
         # Read file and extract text
         text = await self.splitter.read_file(file)
         # project_name = self.splitter.create_project_name(file.filename)
-        project_name=2222
+        project_name=5522
         # Split text into chunks
         chunks_text = await self.splitter.make_splitting(text)
         data_chunks = await self.splitter.make_DataChunk_Split(chunks_text , project_id=2000)

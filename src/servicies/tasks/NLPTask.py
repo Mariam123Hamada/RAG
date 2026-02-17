@@ -16,7 +16,7 @@ class NLPTask:
         self.embed = None
 
     def initialize_providers(self, db: Session):
-        settings = get_settings()
+        settings = get_settings
 
         grok_key = settings.GROK_KEY
         cohere_key = settings.COHERE_KEY
@@ -30,14 +30,14 @@ class NLPTask:
         if not db:
             raise RuntimeError("Database session is not provided.")
 
-        self.client = grokgenertion(api_key=grok_key)
+        self.client = grokgenertion(api_key=grok_key , genertion_model=settings.GENERTION_MODEL)
         self.client.connect()
 
         self.embed = cohereProvider(api_key=cohere_key)
         self.splitter = ProjectSplitters()
         self.db_service = pgvector(self.splitter, db)
 
-    def upload_file(self, file: UploadFile):
+    async def upload_file(self, file: UploadFile):
         if not file:
             raise RuntimeError("File is not provided.")
 
@@ -48,15 +48,19 @@ class NLPTask:
             raise RuntimeError("Database service is not initialized.")
 
         file_extension = BaseController.get_file_extension(file.filename)
-        result = self.db_service.insert_project(file)
-
+        result = await self.db_service.insert_project(file)
+        # this is teh content of result 
+        #     "project_id": new_project.project_id,
+        #     "chunks_saved": len(data_chunks)
+        # }
         return {
             "file_extension": file_extension,
             "status": "success",
-            "data": result
+            "data": result["project_id"] ,
+            "total_chunks" : result["chunks_saved"]
         }
 
-    def search_vector(self, project_id: int, query_vector):
+    async def search_vector(self, project_id: int, query_vector):
         if not project_id:
             raise ValueError("Project ID is not provided.")
 
@@ -73,7 +77,7 @@ class NLPTask:
             raise ValueError("Question text is required.")
 
         # Step 1: Convert text to embedding
-        query_vector = self.embed.embed_query(text)
+        query_vector = self.embed.embed_text(text)
 
         # Step 2: Retrieve relevant chunks
         chunks = self.search_vector(project_id, query_vector)
