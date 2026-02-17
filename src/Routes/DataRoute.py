@@ -25,14 +25,14 @@ async def upload_file(
     Upload a file, split it into chunks, and save it to PostgreSQL using pgvector.
     """
 
-    # 1️⃣ Get file extension
+   
     file_name = file.filename
     file_extension = BaseController.get_file_extension(filename=file_name)
 
-    # 2️⃣ Use pgvector to insert project and chunks
+    
     result = await service.insert_project(file=file)
 
-    # 3️⃣ Return response
+    
     return {
         "file_extension": file_extension,
         "status": "success",

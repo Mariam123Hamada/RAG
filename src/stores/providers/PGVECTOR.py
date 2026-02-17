@@ -3,10 +3,12 @@ from fastapi import UploadFile
 from sqlalchemy.orm  import Session
 from sqlalchemy import insert, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from ...models import DataChunk
 from ...models import ProjectSplitters
 from ...stores.schemas import ProjectSchema, ChunkSchema
-from ...helpers import get_db
+from ...helpers import get_db , get_settings
 from ...stores import VectorDBProvider 
+from ...servicies.embedding import cohereProvider
 
 
 class pgvector(VectorDBProvider):
@@ -18,10 +20,14 @@ class pgvector(VectorDBProvider):
         """
         self.db = db
         self.splitter = splitter
+        self.embed_client=None
 
     async def connect(self, db: Session):
         """Assign the SQLAlchemy session"""
         self.db = db
+        app = get_settings()
+        coher_api=app.COHERE_KEY
+        self.embed_client=cohereProvider(api_key=coher_api).connect()
 
     async def disconnect(self):
         """Disconnect the session"""
@@ -32,7 +38,7 @@ class pgvector(VectorDBProvider):
         Read file, split into chunks, store project metadata in 'projects' table
         and chunks in 'chunks' table with embeddings initialized to zeros.
         """
-
+        
         if not self.db:
             raise RuntimeError("Database session is not connected.")
 
@@ -42,7 +48,7 @@ class pgvector(VectorDBProvider):
         project_name=2222
         # Split text into chunks
         chunks_text = await self.splitter.make_splitting(text)
-        data_chunks = await self.splitter.make_DataChunk_Split(chunks_text)
+        data_chunks = await self.splitter.make_DataChunk_Split(chunks_text , project_id=2000)
 
         # Insert into projects table
         new_project = ProjectSchema(
@@ -57,7 +63,7 @@ class pgvector(VectorDBProvider):
             db_chunk = ChunkSchema(
                 project_id=new_project.project_id,
                 content=chunk.content,
-                embedding=[0.0] * 1536  
+                embedding=chunk.embedding 
             )
             self.db.add(db_chunk)
 

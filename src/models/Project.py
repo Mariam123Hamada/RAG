@@ -1,10 +1,10 @@
 from fastapi import UploadFile
 import pypdf
-from .DataChunk import DataChunk
-from langchain_text_splitters import RecursiveCharacterTextSplitter
 from typing import List, Optional
-# Assuming these are your local imports
-# from ..controllers.BaseController import BaseController 
+from ..servicies.embedding import cohereProvider
+from ..helpers import get_settings
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from .DataChunk import DataChunk
 
 
 
@@ -15,7 +15,7 @@ class ProjectSplitters:
         self.chunks: List[str] = []
         self.text: str = ""
         self.splitter: Optional[RecursiveCharacterTextSplitter] = None
-        self.project_name: str = "" 
+        self.project_name: str = ""
 
     async def initialize_splitter(self) -> None:
         self.splitter = RecursiveCharacterTextSplitter(
@@ -26,9 +26,7 @@ class ProjectSplitters:
     async def read_file(self, file: UploadFile) -> str:
         file_name = str(file.filename)
         self.project_name = self.create_project_name(file_name)
-        
-        # Ensure file extension logic is robust
-        ext = file_name.split(".")[-1].lower() 
+        ext = file_name.split(".")[-1].lower()
 
         if ext == "pdf":
             reader = pypdf.PdfReader(file.file)
@@ -43,21 +41,33 @@ class ProjectSplitters:
 
     async def make_splitting(self, text: Optional[str] = None) -> List[str]:
         if self.splitter is None:
-            await self.initialize_splitter() # Auto-initialize if forgotten
+            await self.initialize_splitter()
 
         target_text = text if text is not None else self.text
+
         if not target_text:
             raise ValueError("No text provided for splitting.")
 
         self.chunks = self.splitter.split_text(target_text)
         return self.chunks
-    
-    
-    async def make_DataChunk_Split(self, chunks: List[str]) -> List[DataChunk]:
+
+    async def make_DataChunk_Split(self, chunks: List[str], project_id: int) -> List[DataChunk]:
         if not chunks:
-            raise ValueError("No Text Provided For Splitting")
-        
-        return [DataChunk(chunk, project_id=self.project_name , embedding =[0] *1536 ) for chunk in chunks]
+            raise ValueError("No chunks provided.")
+
+        data_chunks: List[DataChunk] = []
+
+        for chunk in chunks:
+            data_chunk = DataChunk()
+            embedding = data_chunk.make_chunk_embedding(chunk)
+            data_chunk.data_chunk_data(
+                content=chunk,
+                project_id=project_id,
+                embedding=embedding
+            )
+            data_chunks.append(data_chunk)
+
+        return data_chunks
 
     async def total_chunk_count(self) -> int:
         return len(self.chunks)

@@ -11,7 +11,7 @@ class ChunkSchema(Base):
     chunk_id = Column(Integer, primary_key=True)
     content = Column(Text, nullable=False)
     project_id = Column(Integer, ForeignKey("projects.project_id"), nullable=False)
-    embedding = Column(Vector(1536))  
+    embedding = Column(Vector(3072))  
     
     # Relationship back to project
     project = relationship("ProjectSchema", back_populates="chunks")
