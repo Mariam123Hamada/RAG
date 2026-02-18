@@ -49,3 +49,11 @@ async def answer(project_id:int , text : str , service:NLPTask = Depends(get_nlp
     return {
         "answer" : answer["answer"]
     }    
+
+
+@upload_app.post("/Reterive_chunks" , description="This is teh Endpoint to show teh retriver chunks related to the quesry vector" , status_code=status.HTTP_200_OK)    
+async def reterivier(project_id , text : str , service:NLPTask = Depends(get_nlp_task)):
+    res= await service.search_vector(project_id , text )
+    return  {
+        "res":res
+    }

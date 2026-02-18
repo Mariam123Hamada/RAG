@@ -68,7 +68,8 @@ class NLPTask:
 
         if not self.db_service:
             raise RuntimeError("Database connection is not initialized.")
-
+        if not isinstance(query_vector , list):
+            query_vector=self.embed.embed_text(query_vector)[0].values
         res = await self.db_service.search(query_vector=query_vector, top_k=5)
         return res
     async def answer_question(self, project_id: int, text: str):
@@ -79,18 +80,19 @@ class NLPTask:
         query_vector = self.embed.embed_text(text)[0].values
 
         # Step 2: Retrieve relevant chunks
+        # i have handle the methods search vector to return the chunk content not the embedding vector 
         chunks = await self.search_vector(project_id, query_vector)
 
         if not chunks:
             return {"result": "No relevant context found."}
 
-        # Step 3: Build RAG prompt
-        context = "\n".join([chunk.content for chunk in chunks])
+        
+        
 
         # Step 4: Generate answer
         result = self.client.chat_models(
                     question=text,
-                    chunks=context
+                    chunks=chunks
            )
 
         return {

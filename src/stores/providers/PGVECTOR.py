@@ -84,7 +84,11 @@ class pgvector(VectorDBProvider):
         result = self.db.execute(stmt)
         # print(type(result))  -> <class 'sqlalchemy.engine.result.ChunkedIteratorResult'>
         # print(result)  -> <sqlalchemy.engine.result.ChunkedIteratorResult object at 0x0000016156595E90>
-        return result.scalars().all()        
+        res=result.scalars().all()
+        # print(type(res)) ->List 
+        # print(res) 
+        context = "\n".join([chunk.content for chunk in res])
+        return context
     async def get_collection_info(self, project_id):
         """ This Function return the info about the cllection file  """
         if self.db is None:
