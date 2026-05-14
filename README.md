@@ -72,6 +72,16 @@ Your `.env` file should include values for:
 
 > If `.env.example` is not present, create `.env` manually using the same variable names.
 
+5. Update Alembic configuration
+
+Edit `src/alembic.ini` and update the `sqlalchemy.url` with your PostgreSQL password from the `.env` file. For example:
+
+```ini
+sqlalchemy.url = postgresql+asyncpg://postgres:YOUR_PASSWORD@localhost:54329/postgres
+```
+
+Replace `YOUR_PASSWORD` with the value of `POSTGRES_PASSWORD` from your `.env` file.
+
 ## Running with Docker
 
 The project includes a Docker Compose service for PostgreSQL with pgvector.
