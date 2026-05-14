@@ -1,1 +1,1 @@
-from .VectorDBProvider import VectorDBProvider
+from .VectorDBInterface import VectorDBInterface

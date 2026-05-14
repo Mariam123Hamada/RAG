@@ -1,8 +1,7 @@
 from typing import List
 import cohere
 from ....helpers.config import get_settings
-from ..EmbeddingAbtstract import EmbeddingAbstract
-from ....helpers import get_settings
+from ..EmbeddingAbstract import EmbeddingAbstract
 
 
 class cohereProvider(EmbeddingAbstract):

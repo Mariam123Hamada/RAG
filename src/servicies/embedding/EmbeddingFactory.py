@@ -1,7 +1,6 @@
 from .provider.cohereprovider import cohereProvider
 from .provider.gemmniprovider import geminiProvider
-
-
+ 
 class EmbeddingFactory:
 
     @staticmethod

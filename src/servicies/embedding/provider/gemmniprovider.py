@@ -1,8 +1,6 @@
 from typing import List
-# import google.generativeai as genai
 from google import genai
-from ..EmbeddingAbtstract import EmbeddingAbstract
-
+from ..EmbeddingAbstract import EmbeddingAbstract
 
 class geminiProvider(EmbeddingAbstract):
     def __init__(self, api_key: str):

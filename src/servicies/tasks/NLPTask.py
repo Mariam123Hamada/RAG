@@ -1,12 +1,11 @@
 from ...helpers import  get_settings , get_db
-from ..embedding import cohereProvider , geminiProvider
-from ..generation import grokgenertion
+from ...servicies.embedding import cohereProvider , geminiProvider
+from ...servicies.generation import grokgenertion
 from fastapi import APIRouter, UploadFile, File, Depends, status 
 from ...models import ProjectSplitters
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from ...stores.providers import pgvector
 from ...controllers import BaseController
-
 
 class NLPTask:
     def __init__(self):
@@ -15,7 +14,7 @@ class NLPTask:
         self.db_service = None
         self.embed = None
 
-    def initialize_providers(self, db: Session):
+    def initialize_providers(self, db: AsyncSession):
         settings = get_settings
 
         grok_key = settings.GROK_KEY
@@ -39,7 +38,7 @@ class NLPTask:
         self.splitter = ProjectSplitters()
         self.db_service = pgvector(self.splitter, db)
 
-    async def upload_file(self, file: UploadFile):
+    async def upload_file(self,project_id , file: UploadFile):
         if not file:
             raise RuntimeError("File is not provided.")
 
@@ -50,12 +49,16 @@ class NLPTask:
             raise RuntimeError("Database service is not initialized.")
 
         file_extension = BaseController.get_file_extension(file.filename)
-        result = await self.db_service.insert_project(file)
-
+        result = await self.db_service.insert_project(project_id,file)
+        
+        if result["status"] == "Skipped":
+            return result
+        
         return {
-            "file_extension": file_extension,
             "status": "success",
-            "data": result["project_id"] ,
+            "file_extension": file_extension,
+            "File ID": result["project_id"] ,
+            "File Name":result["Project_name"],
             "total_chunks" : result["chunks_saved"]
         }
 

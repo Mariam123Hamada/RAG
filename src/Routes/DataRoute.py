@@ -1,31 +1,24 @@
 from fastapi import APIRouter, UploadFile, File, Depends, status
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from ..helpers import get_db
 from ..stores.providers.PGVECTOR import pgvector
 from ..models import ProjectSplitters
 from ..controllers.BaseController import BaseController
-
 from ..servicies.tasks.NLPTask import NLPTask
 upload_app = APIRouter(
-    prefix="/API/Upload",
+    prefix="/RAG",
     tags=["RAG/API/Upload"]
 )
 
-# Dependency to get a pgvector instance
-# def get_pgvector_service(db: Session = Depends(get_db)) -> pgvector:
-#     splitter = ProjectSplitters(chunk_size=500, chunk_overlap=50)
-#     vector_service = pgvector(splitter=splitter, db=db)
-#     return vector_service
-
-
-def get_nlp_task(db:Session =Depends(get_db)):
+def get_nlp_task(db:AsyncSession =Depends(get_db)):
     nlp_task=NLPTask()
     nlp_task.initialize_providers(db=db)
     return nlp_task
     
     
-@upload_app.post("/F_upload",description="This Endpoint is used For the Upload File ", status_code=status.HTTP_201_CREATED)
+@upload_app.post("/FileUpload",description="This Endpoint is used For the Upload File ", status_code=status.HTTP_201_CREATED)
 async def upload_file(
+    project_id : int ,
     file: UploadFile = File(...),
     service: NLPTask = Depends(get_nlp_task)
 ):
@@ -33,7 +26,7 @@ async def upload_file(
     Upload a file, split it into chunks, and save it to PostgreSQL using pgvector.
     """
 
-    result=  await service.upload_file(file)
+    result=  await service.upload_file(project_id,file)
 
     
     return {
@@ -41,7 +34,7 @@ async def upload_file(
         "data": result
     }
 
-@upload_app.post("/Asnwer_Questions" , description="This Endpoint is used for Answer the question." , status_code = status.HTTP_200_OK)
+@upload_app.post("/AsnwerQuestions" , description="This Endpoint is used for Answer the question." , status_code = status.HTTP_200_OK)
 async def answer(project_id:int , text : str , service:NLPTask = Depends(get_nlp_task)):
     """ This is the Answer Question Endpoint """
     
@@ -51,7 +44,7 @@ async def answer(project_id:int , text : str , service:NLPTask = Depends(get_nlp
     }    
 
 
-@upload_app.post("/Reterive_chunks" , description="This is teh Endpoint to show teh retriver chunks related to the quesry vector" , status_code=status.HTTP_200_OK)    
+@upload_app.post("/Reterivechunks" , description="This is teh Endpoint to show teh retriver chunks related to the quesry vector" , status_code=status.HTTP_200_OK)    
 async def reterivier(project_id , text : str , service:NLPTask = Depends(get_nlp_task)):
     res= await service.search_vector(project_id , text )
     return  {
