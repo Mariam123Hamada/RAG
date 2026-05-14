@@ -1,4 +1,5 @@
 # Object file
 .env
 venv
+__pycache__
 alembic.ini
