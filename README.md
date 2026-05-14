@@ -33,7 +33,7 @@ The application lets users upload documents, split them into vectorized text chu
 1. Clone the repository
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/Mariam123Hamada/RAG.git
 cd RAG
 ```
 
@@ -148,7 +148,5 @@ Response:
 - Add authentication and role-based access control
 - Support additional embedding providers and generation backends
 
-## License
 
-This repository is available under the terms of the project license.
 
